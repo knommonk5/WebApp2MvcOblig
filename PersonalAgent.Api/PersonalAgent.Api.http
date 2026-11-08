@@ -1,0 +1,6 @@
+@PersonalAgent.Api_HostAddress = http://localhost:5236
+
+GET {{PersonalAgent.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

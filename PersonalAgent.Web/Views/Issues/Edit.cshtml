@@ -1,0 +1,70 @@
+﻿@model PersonalAgent.Web.ViewModels.IssueFormViewModel
+
+@{
+    ViewData["Title"] = "Rediger sak";
+}
+
+<h1>Rediger sak #@Model.Id</h1>
+
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+
+        <form asp-controller="Issues"
+              asp-action="Edit"
+              asp-route-id="@Model.Id"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="ProjectId" type="hidden" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Title"
+                       class="form-label"></label>
+
+                <input asp-for="Title"
+                       class="form-control"
+                       maxlength="150" />
+
+                <span asp-validation-for="Title"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description"
+                       class="form-label"></label>
+
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="6"
+                          maxlength="3000"></textarea>
+
+                <span asp-validation-for="Description"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-primary">
+                    Lagre endringer
+                </button>
+
+                <a asp-action="Details"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-outline-secondary">
+                    Avbryt
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

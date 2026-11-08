@@ -1,0 +1,375 @@
+﻿
+@using PersonalAgent.Core.Enums
+@using PersonalAgent.Infrastructure.Identity
+@using PersonalAgent.Web.Helpers
+
+@model PersonalAgent.Web.ViewModels.IssueDetailsViewModel
+
+@{
+    ViewData["Title"] = "Saksdetaljer";
+
+    var isAdmin = ViewBag.IsAdmin == true;
+    var canChangeStatus = ViewBag.CanChangeStatus == true;
+
+    var assignableUsers =
+        ViewBag.AssignableUsers as List<MvcApplicationUser>
+        ?? new List<MvcApplicationUser>();
+}
+
+<h1 class="mb-4">@Model.Title</h1>
+
+@if (TempData["Success"] is string message)
+{
+    <div class="alert alert-success" role="alert">
+        @message
+    </div>
+}
+
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger" role="alert">
+        @error
+    </div>
+}
+
+<!-- SAKSINFORMASJON -->
+
+<div class="card mb-4">
+    <div class="card-body">
+
+        <h5 class="card-title">Saksinformasjon</h5>
+
+        <dl class="row">
+            <dt class="col-sm-3">Saks-ID</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">Prosjekt</dt>
+            <dd class="col-sm-9">
+                <a asp-controller="Projects"
+                   asp-action="Details"
+                   asp-route-id="@Model.ProjectId">
+                    @Model.ProjectName
+                </a>
+            </dd>
+
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">
+                <span class="badge @IssueStatusHelper.GetBadgeClass(Model.Status)">
+                    @IssueStatusHelper.GetDisplayName(Model.Status)
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Tildelt bruker</dt>
+            <dd class="col-sm-9">
+                @if (string.IsNullOrEmpty(Model.AssignedUserId))
+                {
+                    <span class="text-muted">Ikke tildelt</span>
+                }
+                else
+                {
+                    @(Model.AssignedUserName ?? "Ukjent bruker")
+                }
+            </dd>
+
+            <dt class="col-sm-3">Opprettet</dt>
+            <dd class="col-sm-9">
+                @Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+            </dd>
+        </dl>
+
+        <hr />
+
+        <h5>Beskrivelse</h5>
+
+        @if (string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="text-muted">
+                Ingen beskrivelse registrert.
+            </p>
+        }
+        else
+        {
+            <p style="white-space: pre-wrap">@Model.Description</p>
+        }
+
+    </div>
+</div>
+
+<!-- TILDELING - KUN ADMIN -->
+
+@if (isAdmin)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <h5 class="card-title">Tildel sak</h5>
+
+            <p class="text-muted">
+                Ved tildeling til en annen bruker settes
+                status automatisk til «Tildelt».
+                Fjernes tildelingen, settes status til «Åpen».
+                Hvis samme bruker beholdes, endres ikke status.
+            </p>
+
+            <form asp-controller="Issues"
+                  asp-action="Assign"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="assignedUserId"
+                           class="form-label">
+                        Ansvarlig bruker
+                    </label>
+
+                    <select name="assignedUserId"
+                            id="assignedUserId"
+                            class="form-select">
+
+                        @if (string.IsNullOrEmpty(Model.AssignedUserId))
+                        {
+                            <option value="" selected>
+                                Ikke tildelt
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="">
+                                Ikke tildelt
+                            </option>
+                        }
+
+                        @foreach (var user in assignableUsers)
+                        {
+                            if (user.Id == Model.AssignedUserId)
+                            {
+                                <option value="@user.Id" selected>
+                                    @(user.Email ?? user.UserName)
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@user.Id">
+                                    @(user.Email ?? user.UserName)
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Lagre tildeling
+                </button>
+            </form>
+
+        </div>
+    </div>
+}
+
+<!-- STATUSENDRING -->
+
+@if (canChangeStatus)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <h5 class="card-title">Endre status</h5>
+
+            <p class="text-muted">
+                Nåværende status:
+                <span class="badge @IssueStatusHelper.GetBadgeClass(Model.Status)">
+                    @IssueStatusHelper.GetDisplayName(Model.Status)
+                </span>
+            </p>
+
+            <form asp-controller="Issues"
+                  asp-action="ChangeStatus"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="newStatus"
+                           class="form-label">
+                        Ny status
+                    </label>
+
+                    <select name="newStatus"
+                            id="newStatus"
+                            class="form-select"
+                            required>
+
+                        @if (isAdmin)
+                        {
+                            if (Model.Status == IssueStatus.Open)
+                            {
+                                <option value="@((int)IssueStatus.Open)" selected>Åpen</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)IssueStatus.Open)">Åpen</option>
+                            }
+
+                            if (Model.Status == IssueStatus.Assigned)
+                            {
+                                <option value="@((int)IssueStatus.Assigned)" selected>Tildelt</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)IssueStatus.Assigned)">Tildelt</option>
+                            }
+
+                            if (Model.Status == IssueStatus.InProgress)
+                            {
+                                <option value="@((int)IssueStatus.InProgress)" selected>Pågår</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)IssueStatus.InProgress)">Pågår</option>
+                            }
+
+                            if (Model.Status == IssueStatus.Closed)
+                            {
+                                <option value="@((int)IssueStatus.Closed)" selected>Lukket</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)IssueStatus.Closed)">Lukket</option>
+                            }
+                        }
+                        else if (Model.Status == IssueStatus.Assigned)
+                        {
+                            <option value="@((int)IssueStatus.InProgress)">
+                                Pågår
+                            </option>
+                        }
+                        else if (Model.Status == IssueStatus.InProgress)
+                        {
+                            <option value="@((int)IssueStatus.Closed)">
+                                Lukket
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Oppdater status
+                </button>
+            </form>
+
+        </div>
+    </div>
+}
+
+<!-- KOMMENTARER -->
+
+<div class="card mb-4">
+    <div class="card-body">
+
+        <h5 class="card-title">
+            Kommentarer (@Model.Comments.Count)
+        </h5>
+
+        @if (Model.Comments.Count == 0)
+        {
+            <p class="text-muted">
+                Ingen kommentarer er lagt til ennå.
+            </p>
+        }
+        else
+        {
+            <div class="mb-4">
+                @foreach (var comment in Model.Comments)
+                {
+                    <div class="border-bottom py-3">
+
+                        <div class="d-flex flex-wrap
+                                    justify-content-between
+                                    align-items-center gap-2">
+
+                            <strong>@comment.AuthorName</strong>
+
+                            <small class="text-muted">
+                                @comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                            </small>
+                        </div>
+
+                        <p class="mt-2 mb-0"
+                           style="white-space: pre-wrap">@comment.Content</p>
+
+                    </div>
+                }
+            </div>
+        }
+
+        <h6 class="mt-4">Legg til kommentar</h6>
+
+        <form asp-controller="Issues"
+              asp-action="AddComment"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="IssueId"
+                   value="@Model.Id" />
+
+            <div class="mb-3">
+                <label for="commentContent"
+                       class="form-label">
+                    Kommentar
+                </label>
+
+                <textarea name="Content"
+                          id="commentContent"
+                          class="form-control"
+                          rows="4"
+                          maxlength="2000"
+                          required
+                          placeholder="Skriv en kommentar..."></textarea>
+
+                <div class="form-text">
+                    Maksimalt 2000 tegn.
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Publiser kommentar
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<!-- NAVIGASJON -->
+
+<div class="d-flex flex-wrap gap-2 mb-4">
+
+    <a asp-action="Index"
+       asp-route-projectId="@Model.ProjectId"
+       class="btn btn-outline-secondary">
+        Tilbake til saker
+    </a>
+
+    @if (isAdmin)
+    {
+        <a asp-action="Edit"
+           asp-route-id="@Model.Id"
+           class="btn btn-primary">
+            Rediger
+        </a>
+
+        <a asp-action="Delete"
+           asp-route-id="@Model.Id"
+           class="btn btn-outline-danger">
+            Slett
+        </a>
+    }
+
+</div>

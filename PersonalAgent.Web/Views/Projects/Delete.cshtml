@@ -1,0 +1,33 @@
+﻿@model PersonalAgent.Web.ViewModels.ProjectDetailsViewModel
+
+@{
+    ViewData["Title"] = "Slett prosjekt";
+}
+
+<h1>Slett prosjekt</h1>
+
+<div class="alert alert-danger">
+    <strong>Advarsel!</strong>
+    Du er i ferd med å slette prosjektet
+    <strong>@Model.Name</strong>.
+
+    Tilhørende saker og kommentarer vil også bli slettet.
+    Dette kan ikke angres.
+</div>
+
+<form asp-action="Delete"
+      asp-route-id="@Model.Id"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <button type="submit" class="btn btn-danger">
+        Ja, slett prosjektet
+    </button>
+
+    <a asp-action="Details"
+       asp-route-id="@Model.Id"
+       class="btn btn-secondary">
+        Avbryt
+    </a>
+</form>

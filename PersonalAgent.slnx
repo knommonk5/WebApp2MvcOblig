@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="PersonalAgent.Api/PersonalAgent.Api.csproj" />
+  <Project Path="PersonalAgent.Core/PersonalAgent.Core.csproj" />
+  <Project Path="PersonalAgent.Infrastructure/PersonalAgent.Infrastructure.csproj" />
+  <Project Path="PersonalAgent.Tests/PersonalAgent.Tests.csproj" />
+  <Project Path="PersonalAgent.Web.Tests/PersonalAgent.Web.Tests.csproj" />
+  <Project Path="PersonalAgent.Web/PersonalAgent.Web.csproj" />
+</Solution>

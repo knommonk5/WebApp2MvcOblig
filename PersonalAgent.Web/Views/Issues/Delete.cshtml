@@ -1,0 +1,53 @@
+﻿@model PersonalAgent.Web.ViewModels.IssueDetailsViewModel
+
+@{
+    ViewData["Title"] = "Slett sak";
+}
+
+<h1>Slett sak</h1>
+
+<div class="alert alert-warning">
+    <strong>Er du sikker?</strong>
+    Denne handlingen sletter saken permanent.
+    Eventuelle kommentarer knyttet til saken vil også bli slettet.
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Title</h5>
+
+        <dl class="row">
+            <dt class="col-sm-3">Saks-ID</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">Prosjekt</dt>
+            <dd class="col-sm-9">@Model.ProjectName</dd>
+
+            <dt class="col-sm-3">Beskrivelse</dt>
+            <dd class="col-sm-9">
+                @(Model.Description ?? "Ingen beskrivelse")
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-controller="Issues"
+      asp-action="Delete"
+      asp-route-id="@Model.Id"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="d-flex gap-2">
+        <button type="submit"
+                class="btn btn-danger">
+            Ja, slett saken
+        </button>
+
+        <a asp-action="Details"
+           asp-route-id="@Model.Id"
+           class="btn btn-outline-secondary">
+            Avbryt
+        </a>
+    </div>
+</form>

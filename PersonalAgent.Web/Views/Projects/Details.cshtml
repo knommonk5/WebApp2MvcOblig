@@ -1,0 +1,48 @@
+﻿@model PersonalAgent.Web.ViewModels.ProjectDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<h1>@Model.Name</h1>
+
+@if (TempData["Success"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Beskrivelse</h5>
+
+        <p class="card-text">
+            @(string.IsNullOrWhiteSpace(Model.Description)
+                ? "Ingen beskrivelse."
+                : Model.Description)
+        </p>
+
+        <small class="text-muted">
+            Opprettet:
+            @Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+        </small>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-outline-secondary">
+    Tilbake
+</a>
+
+@if (User.IsInRole("Admin"))
+{
+    <a asp-action="Edit"
+       asp-route-id="@Model.Id"
+       class="btn btn-primary">
+        Rediger
+    </a>
+
+    <a asp-action="Delete"
+       asp-route-id="@Model.Id"
+       class="btn btn-outline-danger">
+        Slett
+    </a>
+}

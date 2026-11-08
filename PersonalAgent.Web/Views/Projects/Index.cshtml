@@ -1,0 +1,73 @@
+﻿@model IEnumerable<PersonalAgent.Web.ViewModels.ProjectDetailsViewModel>
+
+@{
+    ViewData["Title"] = "Prosjekter";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Prosjekter</h1>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary">
+            Opprett prosjekt
+        </a>
+    }
+</div>
+
+@if (TempData["Success"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Ingen prosjekter er opprettet ennå.
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Navn</th>
+            <th>Beskrivelse</th>
+            <th>Opprettet</th>
+            <th>Handlinger</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var project in Model)
+        {
+            <tr>
+                <td>@project.Name</td>
+                <td>@project.Description</td>
+                <td>@project.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")</td>
+                <td>
+                    <a asp-action="Details"
+                       asp-route-id="@project.Id"
+                       class="btn btn-sm btn-outline-primary">
+                        Vis
+                    </a>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit"
+                           asp-route-id="@project.Id"
+                           class="btn btn-sm btn-outline-secondary">
+                            Rediger
+                        </a>
+
+                        <a asp-action="Delete"
+                           asp-route-id="@project.Id"
+                           class="btn btn-sm btn-outline-danger">
+                            Slett
+                        </a>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
